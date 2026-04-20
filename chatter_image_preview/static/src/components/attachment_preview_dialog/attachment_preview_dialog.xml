@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="chatter_image_preview.AttachmentPreviewDialog" owl="1">
+        <Dialog title="fileName" size="'xl'"
+                contentClass="'o-chatterImagePreview-dialog p-0 overflow-hidden'">
+
+            <!-- ── Loading spinner ──────────────────────────────────────────── -->
+            <t t-if="state.loading">
+                <div class="d-flex justify-content-center align-items-center"
+                     style="min-height: 220px;">
+                    <i class="fa fa-circle-o-notch fa-spin fa-2x text-muted"/>
+                </div>
+            </t>
+
+            <!-- ── Error ────────────────────────────────────────────────────── -->
+            <t t-elif="state.error">
+                <div class="alert alert-warning m-3">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <t t-esc="state.error"/>
+                </div>
+                <div class="text-center pb-4">
+                    <a t-att-href="downloadUrl" t-att-download="fileName"
+                       class="btn btn-primary">
+                        <i class="fa fa-download me-1"/>
+                        <t t-esc="_t('Download')"/>
+                    </a>
+                </div>
+            </t>
+
+            <!-- ── CSV table ────────────────────────────────────────────────── -->
+            <t t-elif="state.type === 'csv'">
+                <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                    <table class="table table-sm table-bordered table-hover table-striped mb-0">
+                        <thead class="table-dark"
+                               style="position: sticky; top: 0; z-index: 1;"
+                               t-if="state.rows.length">
+                            <tr>
+                                <th t-foreach="state.rows[0]" t-as="cell" t-key="cell_index">
+                                    <t t-esc="cell"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.rows.slice(1)" t-as="row" t-key="row_index">
+                                <td t-foreach="row" t-as="cell" t-key="cell_index">
+                                    <t t-esc="cell"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+            <!-- ── Markdown ─────────────────────────────────────────────────── -->
+            <t t-elif="state.type === 'markdown'">
+                <div class="o-chatterImagePreview-markdown p-4"
+                     style="max-height: 70vh; overflow-y: auto;">
+                    <t t-out="state.html"/>
+                </div>
+            </t>
+
+            <!-- ── XLSX with data ────────────────────────────────────────────── -->
+            <t t-elif="state.type === 'xlsx' and state.sheets.length > 0">
+
+                <!-- Sheet tabs — only rendered when there are multiple sheets -->
+                <ul t-if="state.sheets.length > 1"
+                    class="nav nav-tabs border-bottom px-2 pt-2 bg-white"
+                    style="position: sticky; top: 0; z-index: 2;">
+                    <li t-foreach="state.sheets" t-as="sheet" t-key="sheet_index"
+                        class="nav-item">
+                        <button class="nav-link py-1 px-3"
+                                t-att-class="{ active: state.activeSheetIdx === sheet_index }"
+                                t-on-click="() => this.onClickSheet(sheet_index)">
+                            <i class="fa fa-table me-1 small"/>
+                            <t t-esc="sheet.name"/>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Data table -->
+                <div class="table-responsive" style="max-height: 65vh; overflow: auto;">
+                    <table t-if="activeSheetRows.length"
+                           class="table table-sm table-bordered table-hover table-striped mb-0">
+                        <thead class="table-dark"
+                               style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th t-foreach="activeSheetRows[0]" t-as="cell" t-key="cell_index">
+                                    <t t-esc="cell"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="activeSheetRows.slice(1)" t-as="row" t-key="row_index">
+                                <td t-foreach="row" t-as="cell" t-key="cell_index">
+                                    <t t-esc="cell"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div t-else="" class="text-center text-muted py-5">
+                        <i class="fa fa-table fa-2x mb-2 d-block"/>
+                        (empty sheet)
+                    </div>
+                </div>
+
+            </t>
+
+            <!-- ── XLS / XLSX (no data) / unknown binary ────────────────────── -->
+            <t t-else="">
+                <div class="text-center py-5 px-3">
+                    <i t-attf-class="fa #{fileIcon} fa-5x mb-3 d-block"/>
+                    <p class="fs-5 fw-semibold mb-1">
+                        <t t-esc="fileName"/>
+                    </p>
+                    <p class="text-muted small mb-4">
+                        <t t-esc="props.attachment.mimetype"/>
+                    </p>
+                    <a t-att-href="downloadUrl" t-att-download="fileName"
+                       class="btn btn-primary">
+                        <i class="fa fa-download me-1"/>
+                        <t t-esc="_t('Download')"/>
+                    </a>
+                </div>
+            </t>
+
+            <!-- ── Footer: Download + Close for data-rich types ─────────────── -->
+            <t t-set-slot="footer"
+               t-if="!state.loading and !state.error and (
+                   state.type === 'csv' or
+                   state.type === 'markdown' or
+                   (state.type === 'xlsx' and state.sheets.length > 0)
+               )">
+                <a t-att-href="downloadUrl" t-att-download="fileName"
+                   class="btn btn-secondary">
+                    <i class="fa fa-download me-1"/>
+                    <t t-esc="_t('Download')"/>
+                </a>
+                <button class="btn btn-primary ms-2" t-on-click="onClickClose">
+                    <t t-esc="_t('Close')"/>
+                </button>
+            </t>
+
+        </Dialog>
+    </t>
+
+</templates>

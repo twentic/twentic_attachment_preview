@@ -1,0 +1,42 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* chatter_image_preview
+#
+# Translators:
+# TwenTIC <info@twentic.com>, 2026
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-17 00:00+0000\n"
+"PO-Revision-Date: 2026-03-17 00:00+0100\n"
+"Last-Translator: TwenTIC <info@twentic.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: chatter_image_preview
+#: model:ir.module.module,shortdesc:chatter_image_preview.module_chatter_image_preview
+msgid "Chatter Image Preview"
+msgstr "Chatter Anhang-Vorschau"
+
+#. module: chatter_image_preview
+#: model:ir.module.module,summary:chatter_image_preview.module_chatter_image_preview
+msgid "Preview images, PDFs, CSVs, Markdown and Excel files from the Chatter"
+msgstr "Bilder, PDFs, CSVs, Markdown und Excel-Dateien im Chatter vorschau"
+
+#. module: chatter_image_preview
+#. odoo-javascript
+#: code:addons/chatter_image_preview/static/src/attachment_card_patch/attachment_card_patch.js:0
+msgid "Attachment preview is not available."
+msgstr "Die Anhang-Vorschau ist nicht verfügbar."
+
+#. module: chatter_image_preview
+#. odoo-javascript
+#: code:addons/chatter_image_preview/static/src/components/attachment_preview_dialog/attachment_preview_dialog.js:0
+msgid "Could not load the attachment preview."
+msgstr "Die Anhang-Vorschau konnte nicht geladen werden."
