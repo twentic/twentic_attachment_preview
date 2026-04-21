@@ -20,6 +20,7 @@ browser download or opening the file in a new tab.
             'chatter_image_preview/static/src/attachment_card_patch/attachment_card_patch.js',
         ],
     },
+    'images': ['static/description/main_screenshot.png'],
     'installable': True,
     'application': False,
     'auto_install': False,
