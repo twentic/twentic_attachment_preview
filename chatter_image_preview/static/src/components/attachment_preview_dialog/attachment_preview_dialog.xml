@@ -60,6 +60,14 @@
                 </div>
             </t>
 
+            <!-- ── DOCX ──────────────────────────────────────────────────────────── -->
+            <t t-elif="state.type === 'docx'">
+                <div class="o-chatterImagePreview-docx p-4"
+                     style="max-height: 70vh; overflow-y: auto; font-family: serif; line-height: 1.6;">
+                    <t t-out="state.html"/>
+                </div>
+            </t>
+
             <!-- ── XLSX with data ────────────────────────────────────────────── -->
             <t t-elif="state.type === 'xlsx' and state.sheets.length > 0">
 
@@ -129,6 +137,7 @@
                t-if="!state.loading and !state.error and (
                    state.type === 'csv' or
                    state.type === 'markdown' or
+                   state.type === 'docx' or
                    (state.type === 'xlsx' and state.sheets.length > 0)
                )">
                 <a t-att-href="downloadUrl" t-att-download="fileName"
