@@ -12,6 +12,9 @@ triggering a browser download or opening the file in a new tab.
     'category': 'Discuss',
     'license': 'LGPL-3',
     'depends': ['mail', 'web'],
+    'external_dependencies': {
+        'python': ['mammoth>=1.11.0', 'bleach'],
+    },
     'data': [],
     'assets': {
         'web.assets_backend': [
