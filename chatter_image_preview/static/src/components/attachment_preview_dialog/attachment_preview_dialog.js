@@ -29,12 +29,22 @@ const XLS_MIMES = new Set([
     "application/xls",
 ]);
 
+const DOCX_MIMES = new Set([
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+
+const DOC_MIMES = new Set([
+    "application/msword",
+]);
+
 /** File-type icons — Bootstrap + Font Awesome classes used in Odoo. */
 const TYPE_ICONS = {
     csv:      "fa-file-text-o text-success",
     markdown: "fa-file-text-o text-primary",
     xlsx:     "fa-file-excel-o text-success",
     xls:      "fa-file-excel-o text-success",
+    docx:     "fa-file-word-o text-primary",
+    doc:      "fa-file-word-o text-primary",
     unknown:  "fa-file-o text-muted",
 };
 
@@ -43,7 +53,7 @@ const TYPE_ICONS = {
  *
  * @param {string} mime
  * @param {string} name
- * @returns {"csv"|"markdown"|"xlsx"|"xls"|"unknown"}
+ * @returns {"csv"|"markdown"|"xlsx"|"xls"|"docx"|"doc"|"unknown"}
  */
 function detectPreviewType(mime, name) {
     const ext = (name ?? "").toLowerCase().split(".").pop();
@@ -51,6 +61,8 @@ function detectPreviewType(mime, name) {
     if (MARKDOWN_MIMES.has(mime) || ext === "md" || ext === "markdown") return "markdown";
     if (XLSX_MIMES.has(mime)     || ext === "xlsx")                   return "xlsx";
     if (XLS_MIMES.has(mime)      || ext === "xls")                    return "xls";
+    if (DOCX_MIMES.has(mime)     || ext === "docx")                   return "docx";
+    if (DOC_MIMES.has(mime)      || ext === "doc")                    return "doc";
     return "unknown";
 }
 
@@ -260,7 +272,7 @@ export class AttachmentPreviewDialog extends Component {
             error:          null,
             type:           null,
             rows:           [],   // CSV: 2-D array of strings
-            html:           null, // Markdown: markup()-wrapped HTML string
+            html:           null, // Markdown / DOCX: markup()-wrapped HTML string
             sheets:         [],   // XLSX: [{ name: string, rows: string[][] }]
             activeSheetIdx: 0,    // XLSX: index of the currently visible sheet tab
         });
@@ -294,8 +306,18 @@ export class AttachmentPreviewDialog extends Component {
                 const data = await resp.json();
                 if (data.error) throw new Error(data.error);
                 this.state.sheets = data.sheets ?? [];
+            } else if (type === "docx") {
+                // Ask the server-side controller to convert the DOCX to HTML.
+                const resp = await fetch(
+                    `/chatter_image_preview/docx/${attachment.id}`,
+                    { credentials: "include" }
+                );
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error);
+                this.state.html = markup(data.html ?? "");
             }
-            // xls / unknown: no fetch — dialog shows metadata + download button
+            // doc / xls / unknown: no fetch — dialog shows metadata + download button
         } catch (_err) {
             this.state.error = _t("Could not load the attachment preview.");
         } finally {

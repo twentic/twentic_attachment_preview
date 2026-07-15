@@ -1,17 +1,20 @@
 {
     'name': 'Chatter Image Preview',
     'version': '18.0.1.3.0',
-    'summary': 'Preview images, PDFs, CSVs, Markdown and Excel files from the Chatter',
+    'summary': 'Preview images, PDFs, CSVs, Markdown, Excel and Word files from the Chatter',
     'description': """
 Modifies the Chatter attachment behaviour so that clicking on an image, PDF,
-CSV, Markdown or Excel file opens a native preview instead of triggering a
-browser download or opening the file in a new tab.
+CSV, Markdown, Excel or Word (.docx) file opens a native preview instead of
+triggering a browser download or opening the file in a new tab.
     """,
     'author': 'TwenTIC',
     'website': 'https://www.twentic.com',
     'category': 'Discuss',
     'license': 'LGPL-3',
     'depends': ['mail', 'web'],
+    'external_dependencies': {
+        'python': ['mammoth>=1.11.0', 'bleach'],
+    },
     'data': [],
     'assets': {
         'web.assets_backend': [

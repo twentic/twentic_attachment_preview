@@ -26,6 +26,8 @@ const CUSTOM_PREVIEW_MIMES = new Set([
     // Markdown
     "text/markdown",
     "text/x-markdown",
+    // Word documents (.docx only; .doc is not supported)
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
 /**
@@ -38,6 +40,7 @@ const CUSTOM_PREVIEW_EXTENSIONS = new Set([
     ".markdown",
     ".xlsx",
     ".xls",
+    ".docx",
 ]);
 
 /**

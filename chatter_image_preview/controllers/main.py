@@ -36,6 +36,12 @@ class ChatterImagePreviewController(http.Controller):
         attachment = request.env['ir.attachment'].browse(attachment_id)
         if not attachment.exists():
             return self._json({'error': 'Attachment not found.'})
+        
+        # Check user has read access to the attachment
+        try:
+            attachment.check_access('read')
+        except Exception:
+            return self._json({'error': 'Access denied.'})
 
         try:
             import openpyxl
@@ -77,6 +83,98 @@ class ChatterImagePreviewController(http.Controller):
                 attachment_id,
             )
             return self._json({'error': 'Could not parse the file. It may be corrupt or password-protected.'})
+
+    @http.route(
+        '/chatter_image_preview/docx/<int:attachment_id>',
+        type='http',
+        auth='user',
+        methods=['GET'],
+    )
+    def docx_preview(self, attachment_id, **kwargs):
+        """
+        Convert a DOCX attachment to HTML and return it as JSON.
+
+        Response format:
+            { "html": "<html string>" }
+        On error:
+            { "error": "<message>" }
+
+        Uses mammoth for DOCX-to-HTML conversion (must be pip-installed).
+        Only .docx (Open XML) format is supported; legacy .doc files will
+        get an informative error message.
+        """
+        attachment = request.env['ir.attachment'].browse(attachment_id)
+        if not attachment.exists():
+            return self._json({'error': 'Attachment not found.'})
+        
+        # Check user has read access to the attachment
+        try:
+            attachment.check_access('read')
+        except Exception:
+            return self._json({'error': 'Access denied.'})
+
+        try:
+            import mammoth
+        except ImportError:
+            return self._json({
+                'error': 'Python package "mammoth" is not available on this server. '
+                         'Ask your administrator to run: pip install mammoth'
+            })
+
+        file_bytes = attachment.raw
+        if not file_bytes:
+            return self._json({'error': 'The attachment has no content.'})
+
+        # Legacy .doc (binary) files are not supported by mammoth
+        name = (attachment.name or '').lower()
+        if name.endswith('.doc') and not name.endswith('.docx'):
+            return self._json({
+                'error': 'Legacy .doc files cannot be previewed. '
+                         'Please convert the file to .docx format first.'
+            })
+
+        try:
+            try:
+                # Available on newer mammoth releases.
+                result = mammoth.convert_to_html(
+                    io.BytesIO(file_bytes),
+                    disable_external_image_requests=True,
+                )
+            except TypeError:
+                # Older mammoth versions do not support this option.
+                result = mammoth.convert_to_html(io.BytesIO(file_bytes))
+            html = result.value
+            
+            # Sanitize HTML to prevent XSS attacks
+            try:
+                import bleach
+                # Allow safe HTML tags and attributes
+                allowed_tags = [
+                    'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody',
+                    'tr', 'th', 'td', 'div', 'span', 'pre', 'code'
+                ]
+                allowed_attrs = {
+                    'a': ['href', 'title'],
+                    'img': ['src', 'alt', 'title'],
+                    '*': ['class', 'id']
+                }
+                html = bleach.clean(html, tags=allowed_tags, attributes=allowed_attrs, strip=True)
+            except ImportError:
+                _logger.warning(
+                    'bleach not available, HTML sanitization skipped. '
+                    'Install with: pip install bleach'
+                )
+            
+            return self._json({'html': html})
+        except Exception:
+            _logger.exception(
+                'chatter_image_preview: could not convert DOCX attachment %d',
+                attachment_id,
+            )
+            return self._json({
+                'error': 'Could not convert the file. It may be corrupt or password-protected.'
+            })
 
     @staticmethod
     def _json(data):
